@@ -19,6 +19,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     if !dir.exists() {
         create_dir_all(&dir)?;
     }
-    println!("{}", dir.to_str().ok_or("could not translate path")?);
+    println!("{}", dir.display());
     Ok(())
 }
