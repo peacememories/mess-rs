@@ -15,7 +15,9 @@ enum NameParseError {
 impl ToString for NameParseError {
     fn to_string(&self) -> String {
         match self {
-            NameParseError::ContainsPathSeparator => String::from("Project name cannot contain path separator"),
+            NameParseError::ContainsPathSeparator => {
+                String::from("Project name cannot contain path separator")
+            }
         }
     }
 }
@@ -43,12 +45,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let base_dir = dirs.data_dir();
     let today = Local::today();
-    let year = today.year();
-    let week_num = today.iso_week().week();
 
     let mut dir = base_dir
-        .join(format!("{}", year))
-        .join(format!("{}", week_num));
+        .join(format!("{}", today.year()))
+        .join(format!("{}", today.iso_week().week()));
 
     if let Some(name) = opts.name {
         dir = dir.join(name);
