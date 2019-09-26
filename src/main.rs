@@ -8,22 +8,22 @@ use std::string::ToString;
 use structopt::StructOpt;
 
 #[derive(Debug)]
-enum AppError {
-    FailedToParseProjectName,
+enum NameParseError {
+    ContainsPathSeparator,
 }
 
-impl ToString for AppError {
+impl ToString for NameParseError {
     fn to_string(&self) -> String {
         match self {
-            AppError::FailedToParseProjectName => String::from("Failed to parse project name"),
+            NameParseError::ContainsPathSeparator => String::from("Project name cannot contain path separator"),
         }
     }
 }
 
-fn parse_project_name(src: &str) -> Result<PathBuf, AppError> {
+fn parse_project_name(src: &str) -> Result<PathBuf, NameParseError> {
     let path = PathBuf::from(src);
     if path.components().count() != 1 {
-        return Err(AppError::FailedToParseProjectName);
+        return Err(NameParseError::ContainsPathSeparator);
     }
 
     Ok(path)
