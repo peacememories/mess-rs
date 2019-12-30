@@ -47,7 +47,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let today = Local::today();
 
     let mut dir = base_dir
-        .join(format!("{}", today.year()))
+        .join(format!("{}", today.iso_week().year()))
         .join(format!("{}", today.iso_week().week()));
 
     if let Some(name) = opts.name {
