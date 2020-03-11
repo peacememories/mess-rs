@@ -2,6 +2,7 @@ use ansi_term::Color::Black;
 use chrono::Datelike;
 use chrono::Local;
 use directories::ProjectDirs;
+use fuzzy_matcher::skim::SkimMatcherV2;
 use glob::{Pattern, PatternError};
 use std::convert::AsRef;
 use std::error::Error;
@@ -72,7 +73,7 @@ enum Command {
     Rescue {
         #[structopt(long = "to", env = "MESS_TARGET_PATH")]
         to: Option<PathBuf>,
-        search: Option<Search>,
+        search: Option<String>,
     },
     Prune,
     Install,
@@ -108,7 +109,61 @@ fn main() -> Result<(), Box<dyn Error>> {
             println!("{}", dir.display());
         }
         Command::Rescue { to, search } => match search {
-            Some(_search) => unimplemented!("Searching is not implemented yet"),
+            Some(search) => {
+                let today = Local::today();
+
+                let today_dir = base_dir
+                    .join(format!("{}", today.year()))
+                    .join(format!("{}", today.iso_week().week()));
+                for year in read_dir(base_dir)? {
+                    let year = year?;
+                    if !year.path().is_dir() {
+                        continue;
+                    }
+                    for week in read_dir(year.path())? {
+                        let week = week?;
+                        if !week.path().is_dir() {
+                            continue;
+                        }
+                        if week.path() == today_dir {
+                            continue;
+                        }
+                        let matcher = SkimMatcherV2::default();
+                        let projects: Vec<DirEntry> = read_dir(week.path())?
+                            .filter(|dir_res| {
+                                dir_res
+                                    .as_ref()
+                                    .map(|dir| !dir.file_name().to_string_lossy().starts_with("."))
+                                    .unwrap_or(true)
+                            })
+                            .filter(|dir_res| {
+                                dir_res
+                                    .as_ref()
+                                    .map(|dir| {
+                                        matcher
+                                            .fuzzy(
+                                                dir.file_name().to_string_lossy().as_ref(),
+                                                search.as_str(),
+                                                false,
+                                            )
+                                            .is_some()
+                                    })
+                                    .unwrap_or(false)
+                            })
+                            .collect::<std::io::Result<Vec<DirEntry>>>()?;
+                        if !projects.is_empty() {
+                            println!(
+                                "{}/{}",
+                                Black.bold().paint(year.file_name().to_string_lossy()),
+                                Black.dimmed().paint(week.file_name().to_string_lossy())
+                            );
+                            for project in projects {
+                                println!("\t{}", project.file_name().to_string_lossy());
+                            }
+                        }
+                    }
+                }
+            }
             None => {
                 let today = Local::today();
 
@@ -157,7 +212,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 struct MessDir {
-    week: String,
-    year: String,
+    week: u8,
+    year: u16,
     projects: Vec<DirEntry>,
 }
