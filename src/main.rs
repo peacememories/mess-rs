@@ -1,4 +1,4 @@
-use ansi_term::Color::Black;
+use ansi_term::Style;
 use chrono::Datelike;
 use chrono::Local;
 use directories::ProjectDirs;
@@ -154,8 +154,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                         if !projects.is_empty() {
                             println!(
                                 "{}/{}",
-                                Black.bold().paint(year.file_name().to_string_lossy()),
-                                Black.dimmed().paint(week.file_name().to_string_lossy())
+                                Style::new()
+                                    .bold()
+                                    .paint(year.file_name().to_string_lossy()),
+                                Style::new()
+                                    .dimmed()
+                                    .paint(week.file_name().to_string_lossy())
                             );
                             for project in projects {
                                 println!("\t{}", project.file_name().to_string_lossy());
@@ -194,8 +198,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                         if !projects.is_empty() {
                             println!(
                                 "{}/{}",
-                                Black.bold().paint(year.file_name().to_string_lossy()),
-                                Black.dimmed().paint(week.file_name().to_string_lossy())
+                                Style::new()
+                                    .bold()
+                                    .paint(year.file_name().to_string_lossy()),
+                                Style::new()
+                                    .dimmed()
+                                    .paint(week.file_name().to_string_lossy())
                             );
                             for project in projects {
                                 println!("\t{}", project.file_name().to_string_lossy());
